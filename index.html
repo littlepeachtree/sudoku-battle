@@ -147,7 +147,7 @@
     <span>房间</span><span id="roomTag" style="color:var(--accent)">—</span>
     <span class="dot room" id="roomDot"></span>
   </div>
-  <div id="verTag" style="text-align:center;font-size:10px;color:var(--dim);padding:2px 0 0;">v5 · 2026-09-07 · 若对方显示“无法加载实时通信库”，请确认对方打开的是本链接（v5）而非旧链接</div>
+  <div id="verTag" style="text-align:center;font-size:10px;color:var(--dim);padding:2px 0 0;">v6 · 2026-09-07 · 若对方显示“无法加载实时通信库”，请确认对方打开的是本链接（v6）而非旧链接</div>
 
   <div id="warnBanner">
     <span id="warnText">20 秒内未等到对手：请双方都刷新页面重试。</span>
@@ -233,14 +233,14 @@
 <script>
 /* ============================================================
  * Sudoku Battle —— 双人同题实时对战（单文件，可直接分享）
- * 注入数据：build_page.py 将 JSON.parse('{"seed": "gq4jgd8s", "difficulty": "medium", "difficultyLabel": "中等", "puzzle": [[0, 0, 9, 0, 4, 0, 0, 0, 6], [8, 0, 4, 9, 3, 0, 1, 0, 0], [0, 2, 0, 0, 7, 0, 0, 0, 0], [3, 9, 0, 0, 0, 0, 2, 0, 1], [5, 0, 0, 1, 0, 0, 9, 7, 8], [7, 0, 0, 0, 0, 0, 3, 0, 4], [0, 0, 5, 0, 1, 4, 0, 9, 7], [0, 8, 1, 0, 5, 0, 0, 4, 3], [4, 0, 0, 6, 8, 9, 0, 0, 0]], "solution": [[1, 5, 9, 2, 4, 8, 7, 3, 6], [8, 7, 4, 9, 3, 6, 1, 2, 5], [6, 2, 3, 5, 7, 1, 4, 8, 9], [3, 9, 8, 4, 6, 7, 2, 5, 1], [5, 4, 6, 1, 2, 3, 9, 7, 8], [7, 1, 2, 8, 9, 5, 3, 6, 4], [2, 6, 5, 3, 1, 4, 8, 9, 7], [9, 8, 1, 7, 5, 2, 6, 4, 3], [4, 3, 7, 6, 8, 9, 5, 1, 2]], "gameId": "20260907-015151-0t84", "givens": 36}') 中的
- * {"seed": "gq4jgd8s", "difficulty": "medium", "difficultyLabel": "中等", "puzzle": [[0, 0, 9, 0, 4, 0, 0, 0, 6], [8, 0, 4, 9, 3, 0, 1, 0, 0], [0, 2, 0, 0, 7, 0, 0, 0, 0], [3, 9, 0, 0, 0, 0, 2, 0, 1], [5, 0, 0, 1, 0, 0, 9, 7, 8], [7, 0, 0, 0, 0, 0, 3, 0, 4], [0, 0, 5, 0, 1, 4, 0, 9, 7], [0, 8, 1, 0, 5, 0, 0, 4, 3], [4, 0, 0, 6, 8, 9, 0, 0, 0]], "solution": [[1, 5, 9, 2, 4, 8, 7, 3, 6], [8, 7, 4, 9, 3, 6, 1, 2, 5], [6, 2, 3, 5, 7, 1, 4, 8, 9], [3, 9, 8, 4, 6, 7, 2, 5, 1], [5, 4, 6, 1, 2, 3, 9, 7, 8], [7, 1, 2, 8, 9, 5, 3, 6, 4], [2, 6, 5, 3, 1, 4, 8, 9, 7], [9, 8, 1, 7, 5, 2, 6, 4, 3], [4, 3, 7, 6, 8, 9, 5, 1, 2]], "gameId": "20260907-015151-0t84", "givens": 36} 替换为 {seed,difficulty,difficultyLabel,puzzle,
+ * 注入数据：build_page.py 将 JSON.parse('{"seed": "e3igxsk1", "difficulty": "medium", "difficultyLabel": "中等", "puzzle": [[0, 0, 0, 7, 0, 0, 2, 3, 0], [0, 3, 4, 0, 0, 0, 1, 6, 0], [5, 0, 0, 0, 0, 6, 4, 0, 0], [0, 5, 1, 4, 3, 0, 0, 2, 0], [0, 0, 0, 5, 1, 0, 0, 0, 6], [3, 4, 0, 0, 6, 0, 5, 0, 1], [0, 0, 6, 9, 0, 8, 7, 1, 0], [0, 9, 0, 0, 0, 4, 8, 5, 0], [8, 0, 5, 1, 0, 0, 0, 0, 4]], "solution": [[9, 6, 8, 7, 4, 1, 2, 3, 5], [7, 3, 4, 2, 8, 5, 1, 6, 9], [5, 1, 2, 3, 9, 6, 4, 8, 7], [6, 5, 1, 4, 3, 7, 9, 2, 8], [2, 8, 7, 5, 1, 9, 3, 4, 6], [3, 4, 9, 8, 6, 2, 5, 7, 1], [4, 2, 6, 9, 5, 8, 7, 1, 3], [1, 9, 3, 6, 7, 4, 8, 5, 2], [8, 7, 5, 1, 2, 3, 6, 9, 4]], "gameId": "20260907-024229-q4kj", "givens": 36}') 中的
+ * {"seed": "e3igxsk1", "difficulty": "medium", "difficultyLabel": "中等", "puzzle": [[0, 0, 0, 7, 0, 0, 2, 3, 0], [0, 3, 4, 0, 0, 0, 1, 6, 0], [5, 0, 0, 0, 0, 6, 4, 0, 0], [0, 5, 1, 4, 3, 0, 0, 2, 0], [0, 0, 0, 5, 1, 0, 0, 0, 6], [3, 4, 0, 0, 6, 0, 5, 0, 1], [0, 0, 6, 9, 0, 8, 7, 1, 0], [0, 9, 0, 0, 0, 4, 8, 5, 0], [8, 0, 5, 1, 0, 0, 0, 0, 4]], "solution": [[9, 6, 8, 7, 4, 1, 2, 3, 5], [7, 3, 4, 2, 8, 5, 1, 6, 9], [5, 1, 2, 3, 9, 6, 4, 8, 7], [6, 5, 1, 4, 3, 7, 9, 2, 8], [2, 8, 7, 5, 1, 9, 3, 4, 6], [3, 4, 9, 8, 6, 2, 5, 7, 1], [4, 2, 6, 9, 5, 8, 7, 1, 3], [1, 9, 3, 6, 7, 4, 8, 5, 2], [8, 7, 5, 1, 2, 3, 6, 9, 4]], "gameId": "20260907-024229-q4kj", "givens": 36} 替换为 {seed,difficulty,difficultyLabel,puzzle,
  * solution,gameId,givens} 的 JSON 字符串。未替换时页面自动生成随机题。
  * ============================================================ */
 
 // ================= 注入的题目数据 =================
 let INJECTED = null;
-try { INJECTED = JSON.parse('{"seed": "gq4jgd8s", "difficulty": "medium", "difficultyLabel": "中等", "puzzle": [[0, 0, 9, 0, 4, 0, 0, 0, 6], [8, 0, 4, 9, 3, 0, 1, 0, 0], [0, 2, 0, 0, 7, 0, 0, 0, 0], [3, 9, 0, 0, 0, 0, 2, 0, 1], [5, 0, 0, 1, 0, 0, 9, 7, 8], [7, 0, 0, 0, 0, 0, 3, 0, 4], [0, 0, 5, 0, 1, 4, 0, 9, 7], [0, 8, 1, 0, 5, 0, 0, 4, 3], [4, 0, 0, 6, 8, 9, 0, 0, 0]], "solution": [[1, 5, 9, 2, 4, 8, 7, 3, 6], [8, 7, 4, 9, 3, 6, 1, 2, 5], [6, 2, 3, 5, 7, 1, 4, 8, 9], [3, 9, 8, 4, 6, 7, 2, 5, 1], [5, 4, 6, 1, 2, 3, 9, 7, 8], [7, 1, 2, 8, 9, 5, 3, 6, 4], [2, 6, 5, 3, 1, 4, 8, 9, 7], [9, 8, 1, 7, 5, 2, 6, 4, 3], [4, 3, 7, 6, 8, 9, 5, 1, 2]], "gameId": "20260907-015151-0t84", "givens": 36}'); } catch (e) { INJECTED = null; }
+try { INJECTED = JSON.parse('{"seed": "e3igxsk1", "difficulty": "medium", "difficultyLabel": "中等", "puzzle": [[0, 0, 0, 7, 0, 0, 2, 3, 0], [0, 3, 4, 0, 0, 0, 1, 6, 0], [5, 0, 0, 0, 0, 6, 4, 0, 0], [0, 5, 1, 4, 3, 0, 0, 2, 0], [0, 0, 0, 5, 1, 0, 0, 0, 6], [3, 4, 0, 0, 6, 0, 5, 0, 1], [0, 0, 6, 9, 0, 8, 7, 1, 0], [0, 9, 0, 0, 0, 4, 8, 5, 0], [8, 0, 5, 1, 0, 0, 0, 0, 4]], "solution": [[9, 6, 8, 7, 4, 1, 2, 3, 5], [7, 3, 4, 2, 8, 5, 1, 6, 9], [5, 1, 2, 3, 9, 6, 4, 8, 7], [6, 5, 1, 4, 3, 7, 9, 2, 8], [2, 8, 7, 5, 1, 9, 3, 4, 6], [3, 4, 9, 8, 6, 2, 5, 7, 1], [4, 2, 6, 9, 5, 8, 7, 1, 3], [1, 9, 3, 6, 7, 4, 8, 5, 2], [8, 7, 5, 1, 2, 3, 6, 9, 4]], "gameId": "20260907-024229-q4kj", "givens": 36}'); } catch (e) { INJECTED = null; }
 
 // ================= 客户端数独生成器（与 scripts/generate_sudoku.py 逐位一致） =================
 // @@SUDOKU_CORE_BEGIN@@
@@ -421,11 +421,12 @@ const S = {
   peer: null,            // {cid,name}
   peerKnown: false,
   mySit: false, peerSit: false,   // 坐下机制：双方都坐下才开局
-  isHost: false,
+  isHost: params.get('host') === '1',  // 固定房主：仅 APP 方（host=1）；网页方永远参与者
   firstJoinTs: 0,
   startedSent: false,
   state: 'init',         // init|waiting|countdown|racing|finished
   mqtt: null, brokerName: null, mqttOnline: false,
+  clients: [], midSeq: 0, seenMsgs: [],   // 多 broker：已连接列表 / 发布序号 / 去重表
   seed: null, difficulty: 'medium',
   puzzle: null, solution: null, givens: 0,
   board: [],             // 81 × {v,given,hinted,notes:Set}
@@ -691,45 +692,60 @@ function setConn(ok, txt){
   else { dot.className = 'dot'; tx.textContent = txt || '连接中…'; }
 }
 function topic(){ return 'sudoku/battle/' + S.room; }
+// 多 broker 同时发布：任一 broker 可达即可互通（解决双方落不同服务器导致无法同桌）
 function publish(obj){
-  if (!S.mqttOnline || !S.mqtt) return;
-  try { S.mqtt.publish(topic(), JSON.stringify(obj), { qos: 0 }); } catch (e) {}
-}
-async function connectMQTT(){ return connectMQTTFrom(0); }
-async function connectMQTTFrom(startIdx){
-  if (!(await ensureMqttLib())){ showConnError('无法加载实时通信库：请检查网络后刷新页面重试。'); return; }
-  const order = [];
-  for (let i = 0; i < BROKERS.length; i++) order.push(BROKERS[(startIdx + i) % BROKERS.length]);
-  for (const b of order){
-    await new Promise(r => setTimeout(r, 200));
-    try {
-      const client = mqtt.connect(b.url, {
-        clientId: 'sb_' + S.myCid,
-        clean: true, connectTimeout: 10000, reconnectPeriod: 0, keepalive: 30
-      });
-      await new Promise((res, rej) => {
-        client.once('connect', res);
-        client.once('error', rej);
-      });
-      S.mqtt = client; S.brokerName = b.name; S.mqttOnline = true;
-      setConn(true, '在线 · ' + b.name);
-      client.subscribe(topic(), { qos: 0 }, () => {});
-      client.on('message', onMessage);
-      client.on('close', () => {
-        if (S.mqttOnline){
-          S.mqttOnline = false;
-          setConn(false, '连接断开');
-          $('warnText').textContent = '连接已断开：请刷新页面重新连接。';
-          $('warnBanner').style.display = 'flex';
-        }
-      });
-      client.on('error', () => {});
-      return;
-    } catch (e) {
-      setConn(false, b.name + ' 不可用，切换中…');
-    }
+  if (!S.mqttOnline || !S.clients.length) return;
+  obj.mid = ++S.midSeq;   // 发布序号：同 (cid,mid) 消息只处理一次
+  const payload = JSON.stringify(obj);
+  for (const c of S.clients){
+    try { c.publish(topic(), payload, { qos: 0 }); } catch (e) {}
   }
-  showConnError('实时通信不可用：请检查网络后刷新页面重试。');
+}
+function connLabel(){
+  const names = S.clients.map(c => c._name);
+  return '在线 · ' + (names.length ? names.join('/') : '—');
+}
+function refreshConn(){
+  if (S.clients.length) setConn(true, connLabel());
+  else setConn(false, '连接断开');
+}
+// 同时连接所有公共 broker（能连几个连几个），全部订阅同一 topic
+async function connectMQTT(){
+  if (!(await ensureMqttLib())){ showConnError('无法加载实时通信库：请检查网络后刷新页面重试。'); return; }
+  const tasks = BROKERS.map(b => new Promise(resolve => {
+    (async () => {
+      try {
+        const client = mqtt.connect(b.url, {
+          clientId: 'sb_' + S.myCid + '_' + b.name,
+          clean: true, connectTimeout: 8000, reconnectPeriod: 0, keepalive: 30
+        });
+        await new Promise((res, rej) => { client.once('connect', res); client.once('error', rej); });
+        client._name = b.name;
+        S.clients.push(client);
+        client.subscribe(topic(), { qos: 0 }, () => {});
+        client.on('message', onMessage);
+        client.on('close', () => {
+          S.clients = S.clients.filter(x => x !== client);
+          if (S.clients.length) refreshConn();
+          else {
+            S.mqttOnline = false;
+            refreshConn();
+            $('warnText').textContent = '连接已断开：请刷新页面重新连接。';
+            $('warnBanner').style.display = 'flex';
+          }
+        });
+        client.on('error', () => {});
+        resolve(true);
+      } catch (e) { resolve(false); }
+    })();
+  }));
+  const results = await Promise.all(tasks);
+  if (S.clients.length){
+    S.mqttOnline = true;
+    refreshConn();
+  } else {
+    showConnError('实时通信不可用：请检查网络后刷新页面重试。');
+  }
 }
 // 实时通信失败提示（不进入单人模式，停留在等待界面）
 function showConnError(msg){
@@ -743,6 +759,13 @@ function onMessage(t, payload){
   let m;
   try { m = JSON.parse(payload.toString()); } catch (e) { return; }
   if (m.cid === S.myCid) return;
+  // 多 broker 去重：同一消息可能经多个服务器各收到一次，(cid,mid) 唯一
+  if (m.mid){
+    const key = m.cid + ':' + m.mid;
+    if (S.seenMsgs.includes(key)) return;
+    S.seenMsgs.push(key);
+    if (S.seenMsgs.length > 200) S.seenMsgs.shift();
+  }
   switch (m.type){
     case 'join': handleJoin(m); break;
     case 'sit': handleSit(m); break;
@@ -760,11 +783,10 @@ function handleJoin(m){
   S.peerKnown = true;
   renderPlayers();
   if (isNewPeer){
-    // 角色判定：先加入（ts 更小）者为房主；ts 相同按 cid 字典序兜底
-    const myTs = S.firstJoinTs || Date.now();
-    const otherTs = m.ts || Date.now();
-    const host = (myTs < otherTs) || (myTs === otherTs && S.myCid < m.cid);
-    S.isHost = host;
+    // 固定房主：仅 APP 方（host=1）是房主，网页方永远是参与者——
+    // 网页方先打开也不会成为房主，不存在「网页方作为第一个玩家坐下」的情形
+    // 收到新 peer 立即回一次 join，加速双方互相发现（防 join 消息丢失）
+    publish({ type: 'join', cid: S.myCid, name: S.myName, ts: S.firstJoinTs, difficulty: S.difficulty, seed: S.seed });
     // 坐下机制：双方都坐下后由房主开局；对局中对手重连则房主重发 start 同步
     checkBothSat();
     if ((S.state === 'countdown' || S.state === 'racing') && S.isHost){
@@ -1007,12 +1029,10 @@ function startWaiting(){
     if (S.state !== 'waiting'){ clearInterval(S.joinTimer); return; }
     publish(joinPayload());   // 每 6 秒重发一次 join，防配对失败
     if (S.waitElapsed >= 20 && !S.rotated){
-      // 20 秒未等到对手：提示刷新重试；同时自动轮换到下一台公共 broker，
-      // 防止双方落在不同 broker 上而无法互通
+      // 20 秒未等到对手：提示刷新重试（多 broker 同时连接，无需切换服务器）
       S.rotated = true;
       $('warnBanner').style.display = 'flex';
       $('warnText').textContent = '20 秒内未等到对手：请双方都刷新页面重试。';
-      rotateBroker();
     }
     if (S.waitElapsed >= 90){
       // 90 秒仍无对手：保持等待（无单人模式），持续提示
@@ -1020,24 +1040,6 @@ function startWaiting(){
       $('warnText').textContent = '仍未检测到对手：请确认对方已打开同一链接，并都已点击「坐下」。';
     }
   }, 6000);
-}
-function rotateBroker(){
-  if (!S.mqttOnline || S.peer) return;
-  const cur = BROKERS.findIndex(b => b.name === S.brokerName);
-  if (cur === -1) return;
-  const next = (cur + 1) % BROKERS.length;
-  toast('正在切换服务器 ' + BROKERS[next].name + ' …', 2000);
-  try { S.mqtt.end(true); } catch (e) {}
-  S.mqttOnline = false;
-  setConn(false, '切换中…');
-  S.rotated = false;
-  S.waitElapsed = 0;
-  connectMQTTFrom(next).then(() => {
-    if (S.mqttOnline && S.state === 'waiting'){
-      clearInterval(S.joinTimer);
-      startWaiting();
-    }
-  });
 }
 
 // ================= 初始化 =================
