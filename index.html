@@ -60,6 +60,10 @@
   .cell.conflict.given{color:var(--danger);}
   .cell.sel{outline:3px solid var(--accent); outline-offset:-2px; z-index:2; background:#e0f2fe;}
   .cell.given.sel{outline:3px solid var(--accent2);}
+  .cell.hl-dim{background:#eef2f7;}   /* 辅助：同行同列同宫淡化 */
+  .cell.hl-num{background:#fde68a;}   /* 辅助：同数字金色加亮（第一版功能恢复） */
+  .cell.given.hl-num{background:#fcd34d;}
+  .cell.hinted.hl-num{background:var(--goldbg);}
   .cell.bl{box-shadow:inset -2px 0 0 #475569;}  /* 右粗线(列) */
   .cell.bt{box-shadow:inset 0 -2px 0 #475569;}  /* 下粗线(行) */
   .cell.bl.bt{box-shadow:inset -2px -2px 0 #475569;}
@@ -147,10 +151,10 @@
     <span>房间</span><span id="roomTag" style="color:var(--accent)">—</span>
     <span class="dot room" id="roomDot"></span>
   </div>
-  <div id="verTag" style="text-align:center;font-size:10px;color:var(--dim);padding:2px 0 0;">v6 · 2026-09-07 · 若对方显示“无法加载实时通信库”，请确认对方打开的是本链接（v6）而非旧链接</div>
+  <div id="verTag" style="text-align:center;font-size:10px;color:var(--dim);padding:2px 0 0;">v7 · 2026-09-07 · 若对方显示“无法加载实时通信库”，请确认对方打开的是本链接（v7）而非旧链接</div>
 
   <div id="warnBanner">
-    <span id="warnText">20 秒内未等到对手：请双方都刷新页面重试。</span>
+    <span id="warnText">等待对手加入…请稍候</span>
   </div>
 
   <div class="players">
@@ -188,6 +192,10 @@
         <button data-diff="hard">困难</button>
         <button data-diff="expert">专家</button>
       </div>
+      <div class="diffrow" id="sizeRow">
+        <button data-size="4">四宫格 4×4</button>
+        <button data-size="9">九宫格 9×9</button>
+      </div>
       <div class="pad">
         <button data-n="1">1</button><button data-n="2">2</button><button data-n="3">3</button>
         <button class="tool" id="eraseBtn">擦除</button><button class="tool" id="noteBtn">笔记</button>
@@ -198,10 +206,7 @@
         <button class="tool" id="restartBtn">重开</button>
         <button class="tool" id="surrBtn">认输</button>
       </div>
-      <div class="btns" style="grid-template-columns:1fr;">
-        <button id="bigShareBtn">🔗 复制对战链接，发微信给好友</button>
-      </div>
-      <div class="hintline">提示 ×3 · 笔记开/关 · 对局中换难度请用「重开一局」</div>
+      <div class="hintline">提示 ×3 · 笔记开/关 · 对局中换难度/宫格请用「重开一局」</div>
     </div>
   </div>
 </div>
@@ -233,14 +238,14 @@
 <script>
 /* ============================================================
  * Sudoku Battle —— 双人同题实时对战（单文件，可直接分享）
- * 注入数据：build_page.py 将 JSON.parse('{"seed": "e3igxsk1", "difficulty": "medium", "difficultyLabel": "中等", "puzzle": [[0, 0, 0, 7, 0, 0, 2, 3, 0], [0, 3, 4, 0, 0, 0, 1, 6, 0], [5, 0, 0, 0, 0, 6, 4, 0, 0], [0, 5, 1, 4, 3, 0, 0, 2, 0], [0, 0, 0, 5, 1, 0, 0, 0, 6], [3, 4, 0, 0, 6, 0, 5, 0, 1], [0, 0, 6, 9, 0, 8, 7, 1, 0], [0, 9, 0, 0, 0, 4, 8, 5, 0], [8, 0, 5, 1, 0, 0, 0, 0, 4]], "solution": [[9, 6, 8, 7, 4, 1, 2, 3, 5], [7, 3, 4, 2, 8, 5, 1, 6, 9], [5, 1, 2, 3, 9, 6, 4, 8, 7], [6, 5, 1, 4, 3, 7, 9, 2, 8], [2, 8, 7, 5, 1, 9, 3, 4, 6], [3, 4, 9, 8, 6, 2, 5, 7, 1], [4, 2, 6, 9, 5, 8, 7, 1, 3], [1, 9, 3, 6, 7, 4, 8, 5, 2], [8, 7, 5, 1, 2, 3, 6, 9, 4]], "gameId": "20260907-024229-q4kj", "givens": 36}') 中的
- * {"seed": "e3igxsk1", "difficulty": "medium", "difficultyLabel": "中等", "puzzle": [[0, 0, 0, 7, 0, 0, 2, 3, 0], [0, 3, 4, 0, 0, 0, 1, 6, 0], [5, 0, 0, 0, 0, 6, 4, 0, 0], [0, 5, 1, 4, 3, 0, 0, 2, 0], [0, 0, 0, 5, 1, 0, 0, 0, 6], [3, 4, 0, 0, 6, 0, 5, 0, 1], [0, 0, 6, 9, 0, 8, 7, 1, 0], [0, 9, 0, 0, 0, 4, 8, 5, 0], [8, 0, 5, 1, 0, 0, 0, 0, 4]], "solution": [[9, 6, 8, 7, 4, 1, 2, 3, 5], [7, 3, 4, 2, 8, 5, 1, 6, 9], [5, 1, 2, 3, 9, 6, 4, 8, 7], [6, 5, 1, 4, 3, 7, 9, 2, 8], [2, 8, 7, 5, 1, 9, 3, 4, 6], [3, 4, 9, 8, 6, 2, 5, 7, 1], [4, 2, 6, 9, 5, 8, 7, 1, 3], [1, 9, 3, 6, 7, 4, 8, 5, 2], [8, 7, 5, 1, 2, 3, 6, 9, 4]], "gameId": "20260907-024229-q4kj", "givens": 36} 替换为 {seed,difficulty,difficultyLabel,puzzle,
+ * 注入数据：build_page.py 将 JSON.parse('{"seed": "enguq8zs", "difficulty": "medium", "difficultyLabel": "中等", "puzzle": [[0, 9, 6, 5, 2, 0, 0, 0, 0], [0, 2, 7, 0, 8, 0, 9, 0, 6], [0, 8, 0, 0, 6, 0, 2, 7, 5], [0, 5, 3, 0, 0, 1, 0, 0, 2], [0, 1, 2, 0, 7, 0, 3, 4, 0], [0, 4, 0, 6, 0, 0, 8, 0, 0], [0, 7, 0, 0, 4, 0, 0, 0, 8], [0, 0, 0, 7, 5, 0, 4, 9, 0], [4, 0, 0, 9, 1, 0, 5, 0, 0]], "solution": [[3, 9, 6, 5, 2, 7, 1, 8, 4], [5, 2, 7, 1, 8, 4, 9, 3, 6], [1, 8, 4, 3, 6, 9, 2, 7, 5], [8, 5, 3, 4, 9, 1, 7, 6, 2], [6, 1, 2, 8, 7, 5, 3, 4, 9], [7, 4, 9, 6, 3, 2, 8, 5, 1], [9, 7, 5, 2, 4, 3, 6, 1, 8], [2, 6, 1, 7, 5, 8, 4, 9, 3], [4, 3, 8, 9, 1, 6, 5, 2, 7]], "gameId": "20260907-032219-5dpm", "givens": 37, "size": 9}') 中的
+ * {"seed": "enguq8zs", "difficulty": "medium", "difficultyLabel": "中等", "puzzle": [[0, 9, 6, 5, 2, 0, 0, 0, 0], [0, 2, 7, 0, 8, 0, 9, 0, 6], [0, 8, 0, 0, 6, 0, 2, 7, 5], [0, 5, 3, 0, 0, 1, 0, 0, 2], [0, 1, 2, 0, 7, 0, 3, 4, 0], [0, 4, 0, 6, 0, 0, 8, 0, 0], [0, 7, 0, 0, 4, 0, 0, 0, 8], [0, 0, 0, 7, 5, 0, 4, 9, 0], [4, 0, 0, 9, 1, 0, 5, 0, 0]], "solution": [[3, 9, 6, 5, 2, 7, 1, 8, 4], [5, 2, 7, 1, 8, 4, 9, 3, 6], [1, 8, 4, 3, 6, 9, 2, 7, 5], [8, 5, 3, 4, 9, 1, 7, 6, 2], [6, 1, 2, 8, 7, 5, 3, 4, 9], [7, 4, 9, 6, 3, 2, 8, 5, 1], [9, 7, 5, 2, 4, 3, 6, 1, 8], [2, 6, 1, 7, 5, 8, 4, 9, 3], [4, 3, 8, 9, 1, 6, 5, 2, 7]], "gameId": "20260907-032219-5dpm", "givens": 37, "size": 9} 替换为 {seed,difficulty,difficultyLabel,puzzle,
  * solution,gameId,givens} 的 JSON 字符串。未替换时页面自动生成随机题。
  * ============================================================ */
 
 // ================= 注入的题目数据 =================
 let INJECTED = null;
-try { INJECTED = JSON.parse('{"seed": "e3igxsk1", "difficulty": "medium", "difficultyLabel": "中等", "puzzle": [[0, 0, 0, 7, 0, 0, 2, 3, 0], [0, 3, 4, 0, 0, 0, 1, 6, 0], [5, 0, 0, 0, 0, 6, 4, 0, 0], [0, 5, 1, 4, 3, 0, 0, 2, 0], [0, 0, 0, 5, 1, 0, 0, 0, 6], [3, 4, 0, 0, 6, 0, 5, 0, 1], [0, 0, 6, 9, 0, 8, 7, 1, 0], [0, 9, 0, 0, 0, 4, 8, 5, 0], [8, 0, 5, 1, 0, 0, 0, 0, 4]], "solution": [[9, 6, 8, 7, 4, 1, 2, 3, 5], [7, 3, 4, 2, 8, 5, 1, 6, 9], [5, 1, 2, 3, 9, 6, 4, 8, 7], [6, 5, 1, 4, 3, 7, 9, 2, 8], [2, 8, 7, 5, 1, 9, 3, 4, 6], [3, 4, 9, 8, 6, 2, 5, 7, 1], [4, 2, 6, 9, 5, 8, 7, 1, 3], [1, 9, 3, 6, 7, 4, 8, 5, 2], [8, 7, 5, 1, 2, 3, 6, 9, 4]], "gameId": "20260907-024229-q4kj", "givens": 36}'); } catch (e) { INJECTED = null; }
+try { INJECTED = JSON.parse('{"seed": "enguq8zs", "difficulty": "medium", "difficultyLabel": "中等", "puzzle": [[0, 9, 6, 5, 2, 0, 0, 0, 0], [0, 2, 7, 0, 8, 0, 9, 0, 6], [0, 8, 0, 0, 6, 0, 2, 7, 5], [0, 5, 3, 0, 0, 1, 0, 0, 2], [0, 1, 2, 0, 7, 0, 3, 4, 0], [0, 4, 0, 6, 0, 0, 8, 0, 0], [0, 7, 0, 0, 4, 0, 0, 0, 8], [0, 0, 0, 7, 5, 0, 4, 9, 0], [4, 0, 0, 9, 1, 0, 5, 0, 0]], "solution": [[3, 9, 6, 5, 2, 7, 1, 8, 4], [5, 2, 7, 1, 8, 4, 9, 3, 6], [1, 8, 4, 3, 6, 9, 2, 7, 5], [8, 5, 3, 4, 9, 1, 7, 6, 2], [6, 1, 2, 8, 7, 5, 3, 4, 9], [7, 4, 9, 6, 3, 2, 8, 5, 1], [9, 7, 5, 2, 4, 3, 6, 1, 8], [2, 6, 1, 7, 5, 8, 4, 9, 3], [4, 3, 8, 9, 1, 6, 5, 2, 7]], "gameId": "20260907-032219-5dpm", "givens": 37, "size": 9}'); } catch (e) { INJECTED = null; }
 
 // ================= 客户端数独生成器（与 scripts/generate_sudoku.py 逐位一致） =================
 // @@SUDOKU_CORE_BEGIN@@
@@ -273,25 +278,26 @@ function shuffle(arr, rng){
   }
   return arr;
 }
-function isValidCell(grid, r, c, d){
-  for (let i = 0; i < 9; i++){
+function isValidCell(grid, r, c, d, size){
+  for (let i = 0; i < size; i++){
     if (grid[r][i] === d || grid[i][c] === d) return false;
   }
-  const br = Math.floor(r / 3) * 3, bc = Math.floor(c / 3) * 3;
-  for (let i = 0; i < 3; i++)
-    for (let j = 0; j < 3; j++)
+  const box = size === 4 ? 2 : 3;
+  const br = Math.floor(r / box) * box, bc = Math.floor(c / box) * box;
+  for (let i = 0; i < box; i++)
+    for (let j = 0; j < box; j++)
       if (grid[br + i][bc + j] === d) return false;
   return true;
 }
-function solveFull(grid, rng){
-  for (let r = 0; r < 9; r++){
-    for (let c = 0; c < 9; c++){
+function solveFull(grid, rng, size){
+  for (let r = 0; r < size; r++){
+    for (let c = 0; c < size; c++){
       if (grid[r][c] === 0){
-        const digits = shuffle([1,2,3,4,5,6,7,8,9], rng);
+        const digits = shuffle(Array.from({length: size}, (_, i) => i + 1), rng);
         for (const d of digits){
-          if (isValidCell(grid, r, c, d)){
+          if (isValidCell(grid, r, c, d, size)){
             grid[r][c] = d;
-            if (solveFull(grid, rng)) return true;
+            if (solveFull(grid, rng, size)) return true;
             grid[r][c] = 0;
           }
         }
@@ -301,18 +307,18 @@ function solveFull(grid, rng){
   }
   return true;
 }
-function countSolutions(grid, limit){
+function countSolutions(grid, limit, size){
   // MRV：每次选候选数最少的空格分支（并列取行优先第一个）；候选为 0 即死路。
   // 与 generate_sudoku.py 的 count_solutions 逐位一致（不消耗 rng）。
   let count = 0;
   function bt(){
     if (count >= limit) return;
     let best = null, bestCands = null;
-    for (let r = 0; r < 9; r++){
-      for (let c = 0; c < 9; c++){
+    for (let r = 0; r < size; r++){
+      for (let c = 0; c < size; c++){
         if (grid[r][c] === 0){
           const cands = [];
-          for (let d = 1; d <= 9; d++) if (isValidCell(grid, r, c, d)) cands.push(d);
+          for (let d = 1; d <= size; d++) if (isValidCell(grid, r, c, d, size)) cands.push(d);
           if (cands.length === 0) return;
           if (bestCands === null || cands.length < bestCands.length){ best = [r, c]; bestCands = cands; }
         }
@@ -330,33 +336,36 @@ function countSolutions(grid, limit){
   bt();
   return count;
 }
-function digPuzzle(full, rng, targetGivens){
+function digPuzzle(full, rng, targetGivens, size){
   const positions = [];
-  for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) positions.push([r, c]);
+  for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) positions.push([r, c]);
   shuffle(positions, rng);
   const puzzle = full.map(row => row.slice());
-  let givens = 81;
+  let givens = size * size;
   for (const [r, c] of positions){
     if (givens <= targetGivens) break;
     const backup = puzzle[r][c];
     puzzle[r][c] = 0;
-    if (countSolutions(puzzle, 2) === 1) givens--;
+    if (countSolutions(puzzle, 2, size) === 1) givens--;
     else puzzle[r][c] = backup;
   }
   return puzzle;
 }
 const DIFF_RANGES_JS = { easy:[40,45], medium:[32,38], hard:[26,31], expert:[22,25] };
-function generatePuzzle(seedStr, difficulty){
+const DIFF_RANGES_JS_4 = { easy:[8,10], medium:[6,7], hard:[5,5], expert:[4,4] };  // 四宫格（共16格）
+function generatePuzzle(seedStr, difficulty, size){
+  size = size || 9;
   // 与 generate_sudoku.py 的 generate() 逐位一致：挖空未达目标时用派生 seed 重试最多 7 次。
-  const [lo, hi] = DIFF_RANGES_JS[difficulty];
-  let puzzle = null, full = null, givens = 81;
+  const ranges = size === 4 ? DIFF_RANGES_JS_4 : DIFF_RANGES_JS;
+  const [lo, hi] = ranges[difficulty];
+  let puzzle = null, full = null, givens = size * size;
   for (let attempt = 0; attempt < 7; attempt++){
     const s = attempt === 0 ? seedStr : seedStr + '#r' + attempt;
     const rng = makeRng(s);
-    const f = Array.from({length:9}, () => Array(9).fill(0));
-    if (!solveFull(f, rng)) throw new Error('solve failed');
+    const f = Array.from({length:size}, () => Array(size).fill(0));
+    if (!solveFull(f, rng, size)) throw new Error('solve failed');
     const target = lo + Math.floor(rng() * (hi - lo + 1));
-    const p = digPuzzle(f, rng, target);
+    const p = digPuzzle(f, rng, target, size);
     let g = 0;
     for (const row of p) for (const v of row) if (v !== 0) g++;
     puzzle = p; full = f; givens = g;
@@ -428,6 +437,7 @@ const S = {
   mqtt: null, brokerName: null, mqttOnline: false,
   clients: [], midSeq: 0, seenMsgs: [],   // 多 broker：已连接列表 / 发布序号 / 去重表
   seed: null, difficulty: 'medium',
+  size: 9,              // 宫格尺寸：4（四宫格 4×4）或 9（九宫格 9×9，默认）
   puzzle: null, solution: null, givens: 0,
   board: [],             // 81 × {v,given,hinted,notes:Set}
   selected: null,
@@ -444,8 +454,9 @@ const DIFF_LABELS = { easy:'简单', medium:'中等', hard:'困难', expert:'专
 // ================= 棋盘渲染 =================
 function buildBoardFromPuzzle(){
   S.board = [];
-  for (let i = 0; i < 81; i++){
-    const v = S.puzzle[Math.floor(i / 9)][i % 9];
+  const N = S.size;
+  for (let i = 0; i < N * N; i++){
+    const v = S.puzzle[Math.floor(i / N)][i % N];
     S.board.push({ v, given: v !== 0, hinted: false, notes: new Set() });
   }
   S.selected = null;
@@ -456,30 +467,42 @@ function buildBoardFromPuzzle(){
 }
 function cellConflict(idx){
   const b = S.board[idx]; if (!b.v) return false;
-  const r = Math.floor(idx / 9), c = idx % 9;
-  for (let i = 0; i < 9; i++){
-    if (i !== c && S.board[r * 9 + i].v === b.v) return true;
-    if (i !== r && S.board[i * 9 + c].v === b.v) return true;
+  const N = S.size, r = Math.floor(idx / N), c = idx % N;
+  for (let i = 0; i < N; i++){
+    if (i !== c && S.board[r * N + i].v === b.v) return true;
+    if (i !== r && S.board[i * N + c].v === b.v) return true;
   }
-  const br = Math.floor(r / 3) * 3, bc = Math.floor(c / 3) * 3;
-  for (let i = 0; i < 3; i++)
-    for (let j = 0; j < 3; j++){
+  const box = S.size === 4 ? 2 : 3;
+  const br = Math.floor(r / box) * box, bc = Math.floor(c / box) * box;
+  for (let i = 0; i < box; i++)
+    for (let j = 0; j < box; j++){
       const rr = br + i, cc = bc + j;
-      if ((rr !== r || cc !== c) && S.board[rr * 9 + cc].v === b.v) return true;
+      if ((rr !== r || cc !== c) && S.board[rr * N + cc].v === b.v) return true;
     }
   return false;
 }
 function renderBoard(){
   const el = $('board'); el.innerHTML = '';
-  for (let i = 0; i < 81; i++){
+  const N = S.size, box = N === 4 ? 2 : 3;
+  el.style.gridTemplateColumns = 'repeat(' + N + ',1fr)';
+  const selB = S.selected !== null ? S.board[S.selected] : null;
+  for (let i = 0; i < N * N; i++){
     const b = S.board[i];
     const d = document.createElement('div');
     d.className = 'cell';
-    const r = Math.floor(i / 9), c = i % 9;
+    const r = Math.floor(i / N), c = i % N;
     if (b.given) d.classList.add('given');
     if (b.hinted) d.classList.add('hinted');
-    if (c % 3 === 2 && c !== 8) d.classList.add('bl');
-    if (r % 3 === 2 && r !== 8) d.classList.add('bt');
+    if (c % box === box - 1 && c !== N - 1) d.classList.add('bl');
+    if (r % box === box - 1 && r !== N - 1) d.classList.add('bt');
+    // 辅助高亮：同行/同列/同宫 淡化 + 同数字 金色（恢复第一版功能）
+    if (selB && i !== S.selected){
+      if (r === Math.floor(S.selected / N) || c === S.selected % N ||
+          (Math.floor(r / box) === Math.floor(Math.floor(S.selected / N) / box) && Math.floor(c / box) === Math.floor((S.selected % N) / box))){
+        d.classList.add('hl-dim');
+      }
+      if (selB.v && b.v === selB.v) d.classList.add('hl-num');
+    }
     if (S.selected === i) d.classList.add('sel');
     if (!b.given && !b.hinted && b.v && cellConflict(i)) d.classList.add('conflict');
     if (b.given || b.hinted) d.classList.add('locked');
@@ -487,7 +510,10 @@ function renderBoard(){
       d.textContent = b.v;
     } else if (b.notes.size){
       const n = document.createElement('div'); n.className = 'notes';
-      for (let k = 1; k <= 9; k++){
+      const nCol = N === 4 ? 2 : 3;
+      n.style.gridTemplateColumns = 'repeat(' + nCol + ',1fr)';
+      n.style.gridTemplateRows = 'repeat(' + nCol + ',1fr)';
+      for (let k = 1; k <= N; k++){
         const sp = document.createElement('span');
         if (b.notes.has(k)){ sp.textContent = k; sp.classList.add('on'); }
         n.appendChild(sp);
@@ -522,11 +548,12 @@ function eraseCell(){
 }
 function doHint(){
   if (!boardInputAllowed() || S.hintsLeft <= 0) return;
-  for (let i = 0; i < 81; i++){
+  const N = S.size;
+  for (let i = 0; i < N * N; i++){
     const b = S.board[i];
     if (b.given || b.hinted) continue;
-    if (b.v === S.solution[Math.floor(i / 9)][i % 9]) continue; // 当前值正确不算“错误”
-    b.v = S.solution[Math.floor(i / 9)][i % 9];
+    if (b.v === S.solution[Math.floor(i / N)][i % N]) continue; // 当前值正确不算“错误”
+    b.v = S.solution[Math.floor(i / N)][i % N];
     b.hinted = true; b.notes.clear();
     S.hintsLeft--;
     $('hintCnt').textContent = '×' + S.hintsLeft;
@@ -540,10 +567,11 @@ function doHint(){
 
 // ================= 胜负判定 =================
 function checkComplete(){
-  for (let i = 0; i < 81; i++){
+  const N = S.size;
+  for (let i = 0; i < N * N; i++){
     const b = S.board[i];
     if (!b.v) return;
-    if (b.v !== S.solution[Math.floor(i / 9)][i % 9]) return;
+    if (b.v !== S.solution[Math.floor(i / N)][i % N]) return;
   }
   completeGame();
 }
@@ -614,17 +642,19 @@ function startTimers(){
 }
 
 // ================= 倒计时 / 开新局 =================
-function applyNewGame(seed, difficulty, { withCountdown } = {}){
+function applyNewGame(seed, difficulty, size, { withCountdown } = {}){
   S.seed = seed; S.difficulty = difficulty;
-  if (S.injectedSeed === seed && S.injectedDiff === difficulty && S.puzzle){
+  if (size) S.size = (size === 4 || size === 9) ? size : 9;
+  if (S.injectedSeed === seed && S.injectedDiff === difficulty && S.injectedSize === S.size && S.puzzle){
     // 与注入题一致：直接复用注入棋盘（避免重复生成）
   } else {
-    const g = generatePuzzle(seed, difficulty);
+    const g = generatePuzzle(seed, difficulty, S.size);
     S.puzzle = g.puzzle; S.solution = g.solution; S.givens = g.givens;
   }
   S.hintsLeft = 3; $('hintCnt').textContent = '×3'; $('hintBtn').disabled = false;
   buildBoardFromPuzzle();
   updateDiffUI();
+  updateSizeUI();
   if (withCountdown){
     S.state = 'countdown';
     countdownToStart();
@@ -713,13 +743,20 @@ function refreshConn(){
 async function connectMQTT(){
   if (!(await ensureMqttLib())){ showConnError('无法加载实时通信库：请检查网络后刷新页面重试。'); return; }
   const tasks = BROKERS.map(b => new Promise(resolve => {
+    let client = null;
+    // 硬超时：公共 broker 偶发静默挂起（同 IP 连接限流等），12 秒必收尾，避免页面卡在 init
+    const guard = setTimeout(() => {
+      try { if (client) client.end(true); } catch (e) {}
+      resolve(false);
+    }, 12000);
     (async () => {
       try {
-        const client = mqtt.connect(b.url, {
-          clientId: 'sb_' + S.myCid + '_' + b.name,
+        client = mqtt.connect(b.url, {
+          clientId: 'sb_' + S.myCid + '_' + b.name + '_' + Math.floor(Math.random() * 1e5),
           clean: true, connectTimeout: 8000, reconnectPeriod: 0, keepalive: 30
         });
         await new Promise((res, rej) => { client.once('connect', res); client.once('error', rej); });
+        clearTimeout(guard);
         client._name = b.name;
         S.clients.push(client);
         client.subscribe(topic(), { qos: 0 }, () => {});
@@ -736,7 +773,7 @@ async function connectMQTT(){
         });
         client.on('error', () => {});
         resolve(true);
-      } catch (e) { resolve(false); }
+      } catch (e) { clearTimeout(guard); resolve(false); }
     })();
   }));
   const results = await Promise.all(tasks);
@@ -786,7 +823,7 @@ function handleJoin(m){
     // 固定房主：仅 APP 方（host=1）是房主，网页方永远是参与者——
     // 网页方先打开也不会成为房主，不存在「网页方作为第一个玩家坐下」的情形
     // 收到新 peer 立即回一次 join，加速双方互相发现（防 join 消息丢失）
-    publish({ type: 'join', cid: S.myCid, name: S.myName, ts: S.firstJoinTs, difficulty: S.difficulty, seed: S.seed });
+    publish({ type: 'join', cid: S.myCid, name: S.myName, ts: S.firstJoinTs, difficulty: S.difficulty, seed: S.seed, size: S.size });
     // 坐下机制：双方都坐下后由房主开局；对局中对手重连则房主重发 start 同步
     checkBothSat();
     if ((S.state === 'countdown' || S.state === 'racing') && S.isHost){
@@ -837,10 +874,10 @@ function sendStart(){
   const payload = {
     type: 'start', cid: S.myCid, hostName: S.myName,
     guestName: S.peer ? S.peer.name : '',
-    seed: S.seed, difficulty: S.difficulty, ts: Date.now()
+    seed: S.seed, difficulty: S.difficulty, size: S.size, ts: Date.now()
   };
   for (let i = 0; i < 2; i++) publish(payload);
-  applyNewGame(S.seed, S.difficulty, { withCountdown: true });
+  applyNewGame(S.seed, S.difficulty, S.size, { withCountdown: true });
 }
 function handleStart(m){
   S.peer = { cid: m.cid, name: m.hostName || '对手' };
@@ -848,16 +885,18 @@ function handleStart(m){
   renderPlayers();
   S.isHost = false;
   setOppState('已就位');
-  applyNewGame(m.seed, m.difficulty, { withCountdown: true });
+  applyNewGame(m.seed, m.difficulty, m.size, { withCountdown: true });
 }
 function handleConfig(m){
   if (S.state !== 'waiting') return;
-  if (m.seed === S.seed && m.difficulty === S.difficulty) return;
+  if (m.seed === S.seed && m.difficulty === S.difficulty && m.size === S.size) return;
   S.seed = m.seed; S.difficulty = m.difficulty;
-  const g = generatePuzzle(m.seed, m.difficulty);
+  if (m.size === 4 || m.size === 9) S.size = m.size;
+  const g = generatePuzzle(m.seed, m.difficulty, S.size);
   S.puzzle = g.puzzle; S.solution = g.solution; S.givens = g.givens;
   buildBoardFromPuzzle();
   updateDiffUI();
+  updateSizeUI();
   toast('对手已切换难度：' + DIFF_LABELS[m.difficulty], 1600);
 }
 function handleTick(m){
@@ -881,9 +920,9 @@ function doRestart(){
   }
   if (S.isHost){
     const seed = randomSeed();
-    const payload = { type: 'restart', cid: S.myCid, host: true, seed, difficulty: S.difficulty };
+    const payload = { type: 'restart', cid: S.myCid, host: true, seed, difficulty: S.difficulty, size: S.size };
     for (let i = 0; i < 2; i++) publish(payload);
-    applyNewGame(seed, S.difficulty, { withCountdown: true });
+    applyNewGame(seed, S.difficulty, S.size, { withCountdown: true });
   } else {
     publish({ type: 'restart', cid: S.myCid, ask: true });
     toast('已向房主发起重开请求…', 2000);
@@ -895,9 +934,9 @@ function handleRestartMsg(m){
     if (!S.isHost) return;
     if (confirm('对方请求重开一局，是否同意？')){
       const seed = randomSeed();
-      const payload = { type: 'restart', cid: S.myCid, host: true, seed, difficulty: S.difficulty };
+      const payload = { type: 'restart', cid: S.myCid, host: true, seed, difficulty: S.difficulty, size: S.size };
       for (let i = 0; i < 2; i++) publish(payload);
-      applyNewGame(seed, S.difficulty, { withCountdown: true });
+      applyNewGame(seed, S.difficulty, S.size, { withCountdown: true });
     } else {
       publish({ type: 'restart', cid: S.myCid, decline: true });
     }
@@ -905,7 +944,7 @@ function handleRestartMsg(m){
   }
   if (m.decline){ toast('房主拒绝了重开请求', 2000); return; }
   if (m.host){
-    applyNewGame(m.seed, m.difficulty, { withCountdown: true });
+    applyNewGame(m.seed, m.difficulty, m.size, { withCountdown: true });
   }
 }
 let surrConfirm = false, surrTimer = null;
@@ -946,13 +985,41 @@ function changeDifficulty(diff){
   S.difficulty = diff;
   const seed = randomSeed();
   S.seed = seed;
-  const g = generatePuzzle(seed, diff);
+  const g = generatePuzzle(seed, diff, S.size);
   S.puzzle = g.puzzle; S.solution = g.solution; S.givens = g.givens;
   buildBoardFromPuzzle();
   updateDiffUI();
-  const payload = { type: 'config', cid: S.myCid, seed, difficulty: diff };
+  const payload = { type: 'config', cid: S.myCid, seed, difficulty: diff, size: S.size };
   for (let i = 0; i < 4; i++) publish(payload);
   toast('已切换难度，等待对手同步…', 1800);
+}
+function changeSize(size){
+  size = Number(size);
+  if (size === S.size) return;
+  if (S.state === 'racing' || S.state === 'countdown' || S.state === 'finished'){
+    toast('对局中无法换宫格，请使用「重开一局」', 2200);
+    return;
+  }
+  S.size = (size === 4 || size === 9) ? size : 9;
+  const seed = randomSeed();
+  S.seed = seed;
+  const g = generatePuzzle(seed, S.difficulty, S.size);
+  S.puzzle = g.puzzle; S.solution = g.solution; S.givens = g.givens;
+  buildBoardFromPuzzle();
+  updateSizeUI();
+  updateDiffUI();
+  const payload = { type: 'config', cid: S.myCid, seed, difficulty: S.difficulty, size: S.size };
+  for (let i = 0; i < 4; i++) publish(payload);
+  toast('已切换宫格，等待对手同步…', 1800);
+}
+function updateSizeUI(){
+  document.querySelectorAll('#sizeRow button').forEach(b => {
+    b.classList.toggle('on', Number(b.dataset.size) === S.size);
+  });
+  // 四宫格只显示数字 1-4
+  document.querySelectorAll('.pad button[data-n]').forEach(b => {
+    b.style.display = (S.size === 4 && Number(b.dataset.n) > 4) ? 'none' : '';
+  });
 }
 
 // ================= 分享 =================
@@ -1021,18 +1088,17 @@ function startWaiting(){
   renderSitRow();
   const joinPayload = () => ({
     type: 'join', cid: S.myCid, name: S.myName,
-    ts: S.firstJoinTs, difficulty: S.difficulty, seed: S.seed
+    ts: S.firstJoinTs, difficulty: S.difficulty, seed: S.seed, size: S.size
   });
   publish(joinPayload());
   S.joinTimer = setInterval(() => {
     S.waitElapsed += 6;
     if (S.state !== 'waiting'){ clearInterval(S.joinTimer); return; }
     publish(joinPayload());   // 每 6 秒重发一次 join，防配对失败
-    if (S.waitElapsed >= 20 && !S.rotated){
-      // 20 秒未等到对手：提示刷新重试（多 broker 同时连接，无需切换服务器）
-      S.rotated = true;
-      $('warnBanner').style.display = 'flex';
-      $('warnText').textContent = '20 秒内未等到对手：请双方都刷新页面重试。';
+    if (S.waitElapsed % 20 === 0){
+      // 后台自动刷新（无打扰提示）：重新补连 broker + 立即重发 join，避免等待期连接掉线
+      if (!S.clients.length) connectMQTT();
+      publish(joinPayload());
     }
     if (S.waitElapsed >= 90){
       // 90 秒仍无对手：保持等待（无单人模式），持续提示
@@ -1086,17 +1152,20 @@ function boot(){
     S.injectedSeed = S.seed;
     S.difficulty = INJECTED.difficulty || 'medium';
     S.injectedDiff = S.difficulty;
+    S.size = (INJECTED.size === 4) ? 4 : 9;
+    S.injectedSize = S.size;
     S.puzzle = INJECTED.puzzle; S.solution = INJECTED.solution;
     S.givens = INJECTED.givens || countGivens(S.puzzle);
     buildBoardFromPuzzle();
   } else {
     S.seed = randomSeed();
     S.injectedSeed = null;
-    const g = generatePuzzle(S.seed, S.difficulty);
+    const g = generatePuzzle(S.seed, S.difficulty, S.size);
     S.puzzle = g.puzzle; S.solution = g.solution; S.givens = g.givens;
     buildBoardFromPuzzle();
   }
   updateDiffUI();
+  updateSizeUI();
   renderPlayers();
   S.firstJoinTs = Date.now();
 
@@ -1110,6 +1179,9 @@ function boot(){
   // 3) 事件绑定
   document.querySelectorAll('#diffRow button').forEach(b => {
     b.addEventListener('click', () => changeDifficulty(b.dataset.diff));
+  });
+  document.querySelectorAll('#sizeRow button').forEach(b => {
+    b.addEventListener('click', () => changeSize(b.dataset.size));
   });
   document.querySelectorAll('.pad [data-n]').forEach(b => {
     b.addEventListener('click', () => {
@@ -1127,7 +1199,6 @@ function boot(){
   $('restartBtn').addEventListener('click', doRestart);
   $('surrBtn').addEventListener('click', doSurrender);
   $('shareBtn').addEventListener('click', doShare);
-  $('bigShareBtn').addEventListener('click', doCopyLink);
   $('resultBtn').addEventListener('click', () => { closeResult(); doRestart(); });
   $('sitBtnMe').addEventListener('click', sitDown);
   document.addEventListener('keydown', e => {
