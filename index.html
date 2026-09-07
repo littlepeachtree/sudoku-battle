@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>数独对战 · Sudoku Battle</title>
 <meta name="theme-color" content="#0f172a">
+<meta name="sb-ver" content="v7.3 · 2026-09-07">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="数独对战">
@@ -28,7 +29,6 @@
   header{display:flex; align-items:center; justify-content:space-between; gap:8px;}
   .title{font-size:18px; font-weight:800; letter-spacing:.5px;}
   .title .sub{font-size:11px; color:var(--dim); font-weight:500; margin-left:6px;}
-  #statusBar{display:flex; align-items:center; gap:8px; font-size:11px; color:var(--dim); background:var(--panel); border-radius:8px; padding:6px 10px; flex-wrap:wrap;}
   .dot{width:8px;height:8px;border-radius:50%;background:#64748b;display:inline-block;flex:none;}
   .dot.on{background:var(--ok); box-shadow:0 0 6px var(--ok);}
   .dot.err{background:var(--danger);}
@@ -36,6 +36,8 @@
   #roomTag{font-family:ui-monospace,Menlo,monospace;}
   #warnBanner{display:none; background:#7c2d12; color:#fed7aa; border-radius:8px; padding:8px 10px; font-size:12px; line-height:1.5;}
   #warnBanner button{margin-left:6px; background:#fbbf24; color:#1f2937; border:none; border-radius:6px; padding:4px 10px; font-size:12px; cursor:pointer;}
+  #pairToast{position:fixed; left:50%; top:18%; transform:translateX(-50%); background:rgba(15,23,42,.92); color:#fff; padding:10px 16px; border-radius:12px; font-size:14px; font-weight:600; z-index:60; opacity:0; pointer-events:none; transition:opacity .3s; text-align:center; max-width:86%; box-shadow:0 4px 20px rgba(0,0,0,.35);}
+  #pairToast.show{opacity:1;}
 
   /* 对战双方卡片 */
   .players{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
@@ -140,22 +142,14 @@
 <body>
 <div id="app">
   <header>
-    <div class="title">数独对战<span class="sub">SUDOKU BATTLE</span></div>
+    <div class="title">数独对战<span class="sub">SUDOKU BATTLE</span><span id="roomTag" style="font-size:11px;color:var(--accent);margin-left:8px;">—</span></div>
     <div id="diffLabel" class="hintline" style="text-align:right;"></div>
   </header>
-
-  <div id="statusBar">
-    <span class="dot" id="connDot"></span>
-    <span id="connText">连接中…</span>
-    <span style="flex:1"></span>
-    <span>房间</span><span id="roomTag" style="color:var(--accent)">—</span>
-    <span class="dot room" id="roomDot"></span>
-  </div>
-  <div id="verTag" style="text-align:center;font-size:10px;color:var(--dim);padding:2px 0 0;">v7.2 · 2026-09-07 · 若对方显示“无法加载实时通信库”，请确认对方打开的是本链接（v7）而非旧链接</div>
 
   <div id="warnBanner">
     <span id="warnText">等待对手加入…请稍候</span>
   </div>
+  <div id="pairToast"></div>
 
   <div class="players">
     <div class="pcard me" id="meCard">
@@ -238,14 +232,14 @@
 <script>
 /* ============================================================
  * Sudoku Battle —— 双人同题实时对战（单文件，可直接分享）
- * 注入数据：build_page.py 将 JSON.parse('{"seed": "sxxbsh9s", "difficulty": "medium", "difficultyLabel": "中等", "puzzle": [[4, 6, 0, 0, 0, 0, 0, 0, 2], [0, 5, 0, 2, 8, 0, 0, 1, 0], [1, 0, 0, 4, 6, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 2, 3, 7], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 8, 0, 3, 0, 9, 0, 4, 5], [2, 0, 9, 8, 5, 0, 0, 6, 0], [8, 0, 5, 0, 0, 0, 0, 2, 4], [0, 3, 1, 9, 4, 2, 0, 7, 8]], "solution": [[4, 6, 3, 7, 9, 1, 8, 5, 2], [9, 5, 7, 2, 8, 3, 4, 1, 6], [1, 2, 8, 4, 6, 5, 7, 9, 3], [5, 9, 4, 6, 1, 8, 2, 3, 7], [3, 1, 2, 5, 7, 4, 6, 8, 9], [7, 8, 6, 3, 2, 9, 1, 4, 5], [2, 4, 9, 8, 5, 7, 3, 6, 1], [8, 7, 5, 1, 3, 6, 9, 2, 4], [6, 3, 1, 9, 4, 2, 5, 7, 8]], "gameId": "20260907-113555-2h3e", "givens": 34, "size": 9}') 中的
- * {"seed": "sxxbsh9s", "difficulty": "medium", "difficultyLabel": "中等", "puzzle": [[4, 6, 0, 0, 0, 0, 0, 0, 2], [0, 5, 0, 2, 8, 0, 0, 1, 0], [1, 0, 0, 4, 6, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 2, 3, 7], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 8, 0, 3, 0, 9, 0, 4, 5], [2, 0, 9, 8, 5, 0, 0, 6, 0], [8, 0, 5, 0, 0, 0, 0, 2, 4], [0, 3, 1, 9, 4, 2, 0, 7, 8]], "solution": [[4, 6, 3, 7, 9, 1, 8, 5, 2], [9, 5, 7, 2, 8, 3, 4, 1, 6], [1, 2, 8, 4, 6, 5, 7, 9, 3], [5, 9, 4, 6, 1, 8, 2, 3, 7], [3, 1, 2, 5, 7, 4, 6, 8, 9], [7, 8, 6, 3, 2, 9, 1, 4, 5], [2, 4, 9, 8, 5, 7, 3, 6, 1], [8, 7, 5, 1, 3, 6, 9, 2, 4], [6, 3, 1, 9, 4, 2, 5, 7, 8]], "gameId": "20260907-113555-2h3e", "givens": 34, "size": 9} 替换为 {seed,difficulty,difficultyLabel,puzzle,
+ * 注入数据：build_page.py 将 JSON.parse('{"seed": "35s67k4c", "difficulty": "medium", "difficultyLabel": "中等", "puzzle": [[0, 3, 2, 5, 9, 7, 0, 0, 8], [0, 0, 0, 8, 0, 3, 0, 0, 0], [0, 9, 0, 0, 0, 0, 0, 2, 0], [0, 0, 6, 0, 4, 8, 7, 9, 2], [7, 0, 0, 0, 0, 9, 0, 8, 6], [2, 0, 0, 0, 7, 0, 5, 4, 3], [3, 0, 1, 0, 8, 4, 0, 0, 0], [0, 0, 0, 0, 6, 2, 8, 3, 0], [0, 0, 8, 0, 0, 0, 2, 0, 7]], "solution": [[1, 3, 2, 5, 9, 7, 4, 6, 8], [6, 5, 4, 8, 2, 3, 9, 7, 1], [8, 9, 7, 4, 1, 6, 3, 2, 5], [5, 1, 6, 3, 4, 8, 7, 9, 2], [7, 4, 3, 2, 5, 9, 1, 8, 6], [2, 8, 9, 6, 7, 1, 5, 4, 3], [3, 2, 1, 7, 8, 4, 6, 5, 9], [9, 7, 5, 1, 6, 2, 8, 3, 4], [4, 6, 8, 9, 3, 5, 2, 1, 7]], "gameId": "20260907-134509-kcjx", "givens": 36, "size": 9}') 中的
+ * {"seed": "35s67k4c", "difficulty": "medium", "difficultyLabel": "中等", "puzzle": [[0, 3, 2, 5, 9, 7, 0, 0, 8], [0, 0, 0, 8, 0, 3, 0, 0, 0], [0, 9, 0, 0, 0, 0, 0, 2, 0], [0, 0, 6, 0, 4, 8, 7, 9, 2], [7, 0, 0, 0, 0, 9, 0, 8, 6], [2, 0, 0, 0, 7, 0, 5, 4, 3], [3, 0, 1, 0, 8, 4, 0, 0, 0], [0, 0, 0, 0, 6, 2, 8, 3, 0], [0, 0, 8, 0, 0, 0, 2, 0, 7]], "solution": [[1, 3, 2, 5, 9, 7, 4, 6, 8], [6, 5, 4, 8, 2, 3, 9, 7, 1], [8, 9, 7, 4, 1, 6, 3, 2, 5], [5, 1, 6, 3, 4, 8, 7, 9, 2], [7, 4, 3, 2, 5, 9, 1, 8, 6], [2, 8, 9, 6, 7, 1, 5, 4, 3], [3, 2, 1, 7, 8, 4, 6, 5, 9], [9, 7, 5, 1, 6, 2, 8, 3, 4], [4, 6, 8, 9, 3, 5, 2, 1, 7]], "gameId": "20260907-134509-kcjx", "givens": 36, "size": 9} 替换为 {seed,difficulty,difficultyLabel,puzzle,
  * solution,gameId,givens} 的 JSON 字符串。未替换时页面自动生成随机题。
  * ============================================================ */
 
 // ================= 注入的题目数据 =================
 let INJECTED = null;
-try { INJECTED = JSON.parse('{"seed": "sxxbsh9s", "difficulty": "medium", "difficultyLabel": "中等", "puzzle": [[4, 6, 0, 0, 0, 0, 0, 0, 2], [0, 5, 0, 2, 8, 0, 0, 1, 0], [1, 0, 0, 4, 6, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 2, 3, 7], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 8, 0, 3, 0, 9, 0, 4, 5], [2, 0, 9, 8, 5, 0, 0, 6, 0], [8, 0, 5, 0, 0, 0, 0, 2, 4], [0, 3, 1, 9, 4, 2, 0, 7, 8]], "solution": [[4, 6, 3, 7, 9, 1, 8, 5, 2], [9, 5, 7, 2, 8, 3, 4, 1, 6], [1, 2, 8, 4, 6, 5, 7, 9, 3], [5, 9, 4, 6, 1, 8, 2, 3, 7], [3, 1, 2, 5, 7, 4, 6, 8, 9], [7, 8, 6, 3, 2, 9, 1, 4, 5], [2, 4, 9, 8, 5, 7, 3, 6, 1], [8, 7, 5, 1, 3, 6, 9, 2, 4], [6, 3, 1, 9, 4, 2, 5, 7, 8]], "gameId": "20260907-113555-2h3e", "givens": 34, "size": 9}'); } catch (e) { INJECTED = null; }
+try { INJECTED = JSON.parse('{"seed": "35s67k4c", "difficulty": "medium", "difficultyLabel": "中等", "puzzle": [[0, 3, 2, 5, 9, 7, 0, 0, 8], [0, 0, 0, 8, 0, 3, 0, 0, 0], [0, 9, 0, 0, 0, 0, 0, 2, 0], [0, 0, 6, 0, 4, 8, 7, 9, 2], [7, 0, 0, 0, 0, 9, 0, 8, 6], [2, 0, 0, 0, 7, 0, 5, 4, 3], [3, 0, 1, 0, 8, 4, 0, 0, 0], [0, 0, 0, 0, 6, 2, 8, 3, 0], [0, 0, 8, 0, 0, 0, 2, 0, 7]], "solution": [[1, 3, 2, 5, 9, 7, 4, 6, 8], [6, 5, 4, 8, 2, 3, 9, 7, 1], [8, 9, 7, 4, 1, 6, 3, 2, 5], [5, 1, 6, 3, 4, 8, 7, 9, 2], [7, 4, 3, 2, 5, 9, 1, 8, 6], [2, 8, 9, 6, 7, 1, 5, 4, 3], [3, 2, 1, 7, 8, 4, 6, 5, 9], [9, 7, 5, 1, 6, 2, 8, 3, 4], [4, 6, 8, 9, 3, 5, 2, 1, 7]], "gameId": "20260907-134509-kcjx", "givens": 36, "size": 9}'); } catch (e) { INJECTED = null; }
 
 // ================= 客户端数独生成器（与 scripts/generate_sudoku.py 逐位一致） =================
 // @@SUDOKU_CORE_BEGIN@@
@@ -693,13 +687,13 @@ function countdownToStart(){
 function setMyState(t){ $('myStateTxt').textContent = t; }
 function setOppState(t){ $('oppStateTxt').textContent = t; }
 function renderPlayers(){
-  // 房主（APP 方）固定显示在左侧；网页方（参与者）在右侧
-  // 网页方视角：左侧卡片标识为「房主」而非「对手」
+  // 房主（APP 方）固定显示在左侧；网页方（参与者/房客）在右侧
+  // 网页方视角：左侧卡片标识为「房主」；APP 方视角：右侧卡片标识为「房客」
   const oppWho = $('oppWho');
-  if (oppWho) oppWho.textContent = S.isHost ? '对手' : '房主';
-  $('myNameTxt').textContent = S.isHost ? ('房主 · ' + S.myName) : S.myName;
+  if (oppWho) oppWho.textContent = S.isHost ? '房客' : '房主';
+  $('myNameTxt').textContent = S.isHost ? ('房主 · ' + S.myName) : ('房客 · ' + S.myName);
   $('oppNameTxt').textContent = S.peer
-    ? (S.isHost ? S.peer.name : '房主 · ' + S.peer.name)
+    ? (S.isHost ? '房客 · ' + S.peer.name : '房主 · ' + S.peer.name)
     : (S.isHost ? '等待对手加入…' : '等待房主加入…');
   if (S.peer) $('oppCard').classList.add('paired'); 
   // 坐下状态展示
@@ -724,6 +718,7 @@ async function ensureMqttLib(){
 }
 function setConn(ok, txt){
   const dot = $('connDot'), tx = $('connText');
+  if (!dot || !tx) return;   // 顶部连接状态栏已移除，仅保留内部状态
   if (ok === true){ dot.className = 'dot on'; tx.textContent = txt || '在线'; }
   else if (ok === false){ dot.className = 'dot err'; tx.textContent = txt || '离线'; }
   else { dot.className = 'dot'; tx.textContent = txt || '连接中…'; }
@@ -837,6 +832,13 @@ function handleJoin(m){
   S.peerKnown = true;
   renderPlayers();
   if (isNewPeer){
+    // 网页端加入时窗口提示（双方都提示）：对手名字 + 引导坐下
+    const peerNm = S.peer.name;
+    const tip = S.isHost
+      ? '🎉 ' + peerNm + ' 已加入房间，请双方点击「坐下」开始'
+      : '🎉 房主 ' + peerNm + ' 已就位，请点击「坐下」准备';
+    const to = $('pairToast');
+    if (to){ to.textContent = tip; to.classList.add('show'); clearTimeout(to._t); to._t = setTimeout(() => to.classList.remove('show'), 3200); }
     // 固定房主：仅 APP 方（host=1）是房主，网页方永远是参与者——
     // 网页方先打开也不会成为房主，不存在「网页方作为第一个玩家坐下」的情形
     // 收到新 peer 立即回一次 join，加速双方互相发现（防 join 消息丢失）
@@ -858,9 +860,9 @@ function handleSit(m){
 // 坐下/已准备双按钮渲染（自己 + 对手并排）
 function renderSitRow(){
   const meName = $('sitMeName'), peerName = $('sitPeerName');
-  if (meName) meName.textContent = S.isHost ? ('房主 · ' + S.myName) : S.myName;
+  if (meName) meName.textContent = S.isHost ? ('房主 · ' + S.myName) : ('房客 · ' + S.myName);
   if (peerName) peerName.textContent = S.peer
-    ? (S.isHost ? S.peer.name : '房主 · ' + S.peer.name)
+    ? (S.isHost ? '房客 · ' + S.peer.name : '房主 · ' + S.peer.name)
     : (S.isHost ? '等待对手加入…' : '等待房主加入…');
   // 布局：房主（APP 方）固定左侧；网页方（参与者）自己的名字+坐下按钮在右侧
   const cardMe = $('sitCardMe'), cardPeer = $('sitCardPeer');
